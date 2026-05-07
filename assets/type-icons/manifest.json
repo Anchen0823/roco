@@ -1,0 +1,116 @@
+{
+  "sourcePage": "https://wiki.biligame.com/rocom/%E6%8A%80%E8%83%BD%E5%9B%BE%E9%89%B4",
+  "sourceName": "洛克王国:手游WIKI_BWIKI_技能图鉴",
+  "fetchedAt": "2026-05-07",
+  "licenseNote": "Wiki page states CC BY-NC-SA 4.0 for text data; image reuse should retain source attribution where applicable.",
+  "icons": [
+    {
+      "type": "普通",
+      "slug": "normal",
+      "file": "normal.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/6/69/nc77midbqeafn7i2snh5a5h16ctdi0o.png"
+    },
+    {
+      "type": "草",
+      "slug": "grass",
+      "file": "grass.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/1/12/b8bsilucec9a98rsmqkmxt06c4mnnix.png"
+    },
+    {
+      "type": "火",
+      "slug": "fire",
+      "file": "fire.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/a/ab/8wvxz3p479e2b702afdqyzhx9340qgx.png"
+    },
+    {
+      "type": "水",
+      "slug": "water",
+      "file": "water.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/d/d1/csqsyhq1k488329455xdlzdcybv6zjh.png"
+    },
+    {
+      "type": "光",
+      "slug": "light",
+      "file": "light.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/d/de/pxfi7cg0j94c45uxf4itigu90wis7jr.png"
+    },
+    {
+      "type": "地",
+      "slug": "earth",
+      "file": "earth.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/3/32/0w5pybmkd8qm306doqx8kh5onl1o8cq.png"
+    },
+    {
+      "type": "冰",
+      "slug": "ice",
+      "file": "ice.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/9/9b/oxnxxud1xhopw87c7mnawxijz8r1hns.png"
+    },
+    {
+      "type": "龙",
+      "slug": "dragon",
+      "file": "dragon.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/6/65/kgcg0hvl19o7up0ug8f42bbvhi71dke.png"
+    },
+    {
+      "type": "电",
+      "slug": "electric",
+      "file": "electric.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/0/02/iqzkamzcra945jsw5z6o8h9p30fv7db.png"
+    },
+    {
+      "type": "毒",
+      "slug": "poison",
+      "file": "poison.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/5/53/jnd3vijasgthdz2ukggyfpisd464r2v.png"
+    },
+    {
+      "type": "虫",
+      "slug": "bug",
+      "file": "bug.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/c/cb/q3mlwj270f67spwr934hpqx7hj62bm3.png"
+    },
+    {
+      "type": "武",
+      "slug": "martial",
+      "file": "martial.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/5/52/q9hbq9nrnhjt7t86hy7sftv3e2e5fvx.png"
+    },
+    {
+      "type": "翼",
+      "slug": "wing",
+      "file": "wing.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/2/2b/p7wdw88ziupp84s1mr8t9t602psswzz.png"
+    },
+    {
+      "type": "萌",
+      "slug": "moe",
+      "file": "moe.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/5/5f/80jhk99eosjv1ld26wp7ljtmif27lfv.png"
+    },
+    {
+      "type": "幽",
+      "slug": "ghost",
+      "file": "ghost.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/e/e7/ttqdi3zlz72g5dgmc8qg9ko4aorwllw.png"
+    },
+    {
+      "type": "恶",
+      "slug": "dark",
+      "file": "dark.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/3/3b/hrdmz7n0qt3bnmir9fdn7977fvleec0.png"
+    },
+    {
+      "type": "机械",
+      "slug": "machine",
+      "file": "machine.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/a/ad/fw81a2pvdickbcnq5rt17m6066cchcf.png"
+    },
+    {
+      "type": "幻",
+      "slug": "illusion",
+      "file": "illusion.png",
+      "sourceUrl": "https://patchwiki.biligame.com/images/rocom/6/64/89miqle961qdw2tt56hb78bps6f34ci.png"
+    }
+  ]
+}

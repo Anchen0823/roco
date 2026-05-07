@@ -13,7 +13,6 @@
       --ink: #1f2937;
       --muted: #64748b;
       --line: #d8e0ea;
-      --line-strong: #b9c6d8;
       --accent: #ea6a47;
       --accent-soft: #fff0ea;
       --teal: #0f9f8f;
@@ -56,11 +55,14 @@
       font-size: 14px;
     }
     .calculator {
+      position: relative;
+      z-index: 10;
+      overflow: visible;
       display: grid;
       grid-template-columns: minmax(0, 1fr) 300px;
       gap: 16px;
       padding: 16px;
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
@@ -69,39 +71,154 @@
     }
     .controls {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
+      align-items: start;
       min-width: 0;
     }
-    label, .toggle-label {
+    .field, .toggle-label {
       display: grid;
       gap: 7px;
+      align-content: start;
       min-width: 0;
       color: var(--muted);
       font-size: 13px;
       font-weight: 700;
     }
-    select {
+    .field-label {
+      min-height: 18px;
+    }
+    .type-picker {
+      position: relative;
+      min-width: 0;
+    }
+    .type-picker.is-open {
+      z-index: 100;
+    }
+    .picker-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
       color: var(--ink);
-      padding: 0 34px 0 12px;
+      padding: 6px 10px;
       font: inherit;
-      font-weight: 600;
+      font-weight: 800;
+      text-align: left;
+      cursor: pointer;
       outline: none;
-      transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, background 0.16s ease;
     }
-    select:focus {
+    .picker-button:hover {
+      border-color: #b8c4d4;
+      background: #fbfdff;
+    }
+    .picker-button:focus-visible {
       border-color: var(--teal);
       box-shadow: 0 0 0 3px rgba(15, 159, 143, 0.14);
     }
-    select:disabled {
-      opacity: 0.46;
+    .type-picker.is-disabled .picker-button {
+      opacity: 0.48;
       cursor: not-allowed;
       background: #eef2f7;
+    }
+    .picker-caret {
+      color: var(--muted);
+      font-size: 12px;
+      transition: transform 0.16s ease;
+    }
+    .type-picker.is-open .picker-caret {
+      transform: rotate(180deg);
+    }
+    .type-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      width: 100%;
+      max-height: 238px;
+      overflow: auto;
+      margin-top: 0;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.20);
+    }
+    .type-picker.is-open .type-menu {
+      display: grid;
+    }
+    .type-option {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ink);
+      padding: 6px 8px;
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+    .type-option:hover,
+    .type-option.is-selected {
+      background: var(--teal-soft);
+    }
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .type-badge img {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      object-fit: contain;
+    }
+    .type-badge span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .type-badge.is-none .empty-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #64748b;
+      font-weight: 900;
+    }
+    .table-type {
+      display: inline-grid;
+      justify-items: center;
+      gap: 2px;
+      font-size: 12px;
+      line-height: 1.1;
+    }
+    .table-type img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+    .row-type {
+      justify-items: start;
+      grid-template-columns: 24px auto;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
     }
     .same-type {
       grid-column: 1 / -1;
@@ -113,6 +230,10 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel-soft);
+      transition: opacity 0.16s ease, background 0.16s ease;
+    }
+    .same-type.is-disabled {
+      background: #f3f6fa;
     }
     .toggle-label {
       gap: 9px;
@@ -121,9 +242,9 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      min-height: 42px;
+      min-height: 44px;
       color: var(--ink);
-      font-weight: 800;
+      font-weight: 900;
     }
     .switch-row input {
       position: absolute;
@@ -157,7 +278,8 @@
     .result {
       display: grid;
       align-content: space-between;
-      min-height: 152px;
+      align-self: start;
+      min-height: 168px;
       padding: 16px;
       border-radius: 8px;
       color: white;
@@ -187,14 +309,37 @@
       line-height: 1;
       letter-spacing: 0;
     }
-    .result span {
+    .result-detail {
       position: relative;
       z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       color: #e5edf8;
       font-size: 13px;
-      line-height: 1.55;
+      line-height: 1.45;
     }
+    .result-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 28px;
+      max-width: 100%;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .result-chip img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    .result-chip.is-good { background: rgba(15, 159, 143, 0.32); }
+    .result-chip.is-bad { background: rgba(234, 106, 71, 0.28); }
+    .result-chip.is-bonus { background: rgba(234, 179, 8, 0.25); }
     .table-wrap {
+      position: relative;
+      z-index: 1;
       overflow: auto;
       background: var(--panel);
       border: 1px solid var(--line);
@@ -205,14 +350,14 @@
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-      min-width: 940px;
+      min-width: 1060px;
       font-size: 14px;
     }
     th, td {
       border-right: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
-      width: 48px;
-      height: 42px;
+      width: 54px;
+      height: 52px;
       text-align: center;
       white-space: nowrap;
     }
@@ -227,13 +372,19 @@
     th:first-child {
       left: 0;
       z-index: 2;
+      width: 88px;
+      min-width: 88px;
     }
     td:first-child {
       position: sticky;
       left: 0;
+      width: 88px;
+      min-width: 88px;
+      padding-left: 9px;
       background: #f7faff;
       color: #334155;
       font-weight: 800;
+      text-align: left;
     }
     tbody tr:nth-child(even) td:not(:first-child) {
       background: #fbfdff;
@@ -265,11 +416,9 @@
     }
     @media (max-width: 1020px) {
       .calculator { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .same-type { grid-template-columns: 1fr 1fr 1fr; }
-      .result { min-height: 130px; }
+      .result { min-height: 132px; }
     }
-    @media (max-width: 720px) {
+    @media (max-width: 760px) {
       main { width: min(100% - 20px, 1200px); padding-top: 20px; }
       header { display: block; }
       .controls, .same-type { grid-template-columns: 1fr; }
@@ -288,10 +437,19 @@
 
     <section class="calculator" aria-label="属性克制计算器">
       <div class="controls">
-        <label>攻击技能系别<select id="attack"></select></label>
-        <label>受击系别 1<select id="defenseA"></select></label>
-        <label>受击系别 2<select id="defenseB"></select></label>
-        <div class="same-type">
+        <div class="field">
+          <span class="field-label">攻击技能系别</span>
+          <div id="attackPicker" class="type-picker"></div>
+        </div>
+        <div class="field">
+          <span class="field-label">受击系别 1</span>
+          <div id="defenseAPicker" class="type-picker"></div>
+        </div>
+        <div class="field">
+          <span class="field-label">受击系别 2</span>
+          <div id="defenseBPicker" class="type-picker"></div>
+        </div>
+        <div id="sameTypePanel" class="same-type">
           <label class="toggle-label">
             本系加成
             <span class="switch-row">
@@ -300,8 +458,14 @@
               <span id="sameTypeStatus">关闭</span>
             </span>
           </label>
-          <label>攻击方自身系别 1<select id="attackerA"></select></label>
-          <label>攻击方自身系别 2<select id="attackerB"></select></label>
+          <div class="field">
+            <span class="field-label">攻击方自身系别 1</span>
+            <div id="attackerAPicker" class="type-picker"></div>
+          </div>
+          <div class="field">
+            <span class="field-label">攻击方自身系别 2</span>
+            <div id="attackerBPicker" class="type-picker"></div>
+          </div>
         </div>
       </div>
       <div class="result" aria-live="polite">
@@ -309,7 +473,7 @@
           <div class="result-label">最终倍率</div>
           <strong id="multiplier">1 倍</strong>
         </div>
-        <span id="detail">无克制变化</span>
+        <div id="detail" class="result-detail">无克制变化</div>
       </div>
     </section>
 
@@ -327,6 +491,26 @@
 
   <script>
     const types = ["火","水","草","光","恶魔","幽灵","普通","地面","冰","龙","电","毒","虫","武","翼","萌","机械","幻"];
+    const typeIcons = {
+      "火": "fire.png",
+      "水": "water.png",
+      "草": "grass.png",
+      "光": "light.png",
+      "恶魔": "dark.png",
+      "幽灵": "ghost.png",
+      "普通": "normal.png",
+      "地面": "earth.png",
+      "冰": "ice.png",
+      "龙": "dragon.png",
+      "电": "electric.png",
+      "毒": "poison.png",
+      "虫": "bug.png",
+      "武": "martial.png",
+      "翼": "wing.png",
+      "萌": "moe.png",
+      "机械": "machine.png",
+      "幻": "illusion.png"
+    };
     const rows = [
       ".RG....RGR..G...G.",
       "G.R....GRR......G.",
@@ -355,20 +539,130 @@
       }))
     ]));
 
-    const attackSelect = document.getElementById("attack");
-    const attackerASelect = document.getElementById("attackerA");
-    const attackerBSelect = document.getElementById("attackerB");
-    const defenseASelect = document.getElementById("defenseA");
-    const defenseBSelect = document.getElementById("defenseB");
+    const state = {
+      attack: "火",
+      defenseA: "草",
+      defenseB: "冰",
+      attackerA: "",
+      attackerB: ""
+    };
+    const pickers = {};
+    const sameTypePanel = document.getElementById("sameTypePanel");
     const sameTypeToggle = document.getElementById("sameTypeToggle");
     const sameTypeStatus = document.getElementById("sameTypeStatus");
     const multiplier = document.getElementById("multiplier");
     const detail = document.getElementById("detail");
 
-    function fillSelect(select, includeNone = false) {
-      select.innerHTML = "";
-      if (includeNone) select.add(new Option("不选择", ""));
-      types.forEach(type => select.add(new Option(type, type)));
+    function iconSrc(type) {
+      return `assets/type-icons/${typeIcons[type]}`;
+    }
+
+    function createTypeBadge(type, label = type, extraClass = "") {
+      const badge = document.createElement("span");
+      badge.className = `type-badge ${extraClass}`.trim();
+      if (type) {
+        const img = document.createElement("img");
+        img.src = iconSrc(type);
+        img.alt = "";
+        badge.append(img);
+      } else {
+        const empty = document.createElement("span");
+        empty.className = "empty-icon";
+        empty.textContent = "-";
+        badge.classList.add("is-none");
+        badge.append(empty);
+      }
+      const text = document.createElement("span");
+      text.textContent = label;
+      badge.append(text);
+      return badge;
+    }
+
+    function createTableBadge(type, isRow = false) {
+      const badge = document.createElement("span");
+      badge.className = isRow ? "table-type row-type" : "table-type";
+      const img = document.createElement("img");
+      img.src = iconSrc(type);
+      img.alt = "";
+      const text = document.createElement("span");
+      text.textContent = type;
+      badge.append(img, text);
+      return badge;
+    }
+
+    function closePickers(exceptKey = "") {
+      Object.entries(pickers).forEach(([key, picker]) => {
+        if (key !== exceptKey) {
+          picker.root.classList.remove("is-open");
+          picker.button.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    function renderPicker(key) {
+      const picker = pickers[key];
+      const value = state[key];
+      const label = value || "不选择";
+      picker.button.replaceChildren(createTypeBadge(value, label));
+      const caret = document.createElement("span");
+      caret.className = "picker-caret";
+      caret.textContent = "▼";
+      picker.button.append(caret);
+      picker.menu.querySelectorAll(".type-option").forEach(option => {
+        option.classList.toggle("is-selected", option.dataset.value === value);
+      });
+    }
+
+    function setPickerDisabled(key, disabled) {
+      const picker = pickers[key];
+      picker.root.classList.toggle("is-disabled", disabled);
+      picker.button.disabled = disabled;
+      if (disabled) {
+        picker.root.classList.remove("is-open");
+        picker.button.setAttribute("aria-expanded", "false");
+      }
+    }
+
+    function createPicker(rootId, key, includeNone = false) {
+      const root = document.getElementById(rootId);
+      const button = document.createElement("button");
+      const menu = document.createElement("div");
+      button.type = "button";
+      button.className = "picker-button";
+      button.setAttribute("aria-haspopup", "listbox");
+      button.setAttribute("aria-expanded", "false");
+      menu.className = "type-menu";
+      menu.setAttribute("role", "listbox");
+
+      const options = includeNone ? [{ value: "", label: "不选择" }] : [];
+      types.forEach(type => options.push({ value: type, label: type }));
+      options.forEach(option => {
+        const optionButton = document.createElement("button");
+        optionButton.type = "button";
+        optionButton.className = "type-option";
+        optionButton.dataset.value = option.value;
+        optionButton.setAttribute("role", "option");
+        optionButton.append(createTypeBadge(option.value, option.label));
+        optionButton.addEventListener("click", () => {
+          state[key] = option.value;
+          renderPicker(key);
+          closePickers();
+          renderResult();
+        });
+        menu.append(optionButton);
+      });
+
+      button.addEventListener("click", event => {
+        event.stopPropagation();
+        if (button.disabled) return;
+        const willOpen = !root.classList.contains("is-open");
+        closePickers(key);
+        root.classList.toggle("is-open", willOpen);
+        button.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+      root.append(button, menu);
+      pickers[key] = { root, button, menu };
+      renderPicker(key);
     }
 
     function calcSingle(attack, defense) {
@@ -389,44 +683,69 @@
       return Number.parseFloat(value.toFixed(4)).toString();
     }
 
+    function createResultChip(type, text, className = "") {
+      const chip = document.createElement("span");
+      chip.className = `result-chip ${className}`.trim();
+      if (type) {
+        const img = document.createElement("img");
+        img.src = iconSrc(type);
+        img.alt = "";
+        chip.append(img);
+      }
+      chip.append(document.createTextNode(text));
+      return chip;
+    }
+
     function updateSameTypeControls() {
       const enabled = sameTypeToggle.checked;
-      attackerASelect.disabled = !enabled;
-      attackerBSelect.disabled = !enabled;
+      setPickerDisabled("attackerA", !enabled);
+      setPickerDisabled("attackerB", !enabled);
+      sameTypePanel.classList.toggle("is-disabled", !enabled);
       sameTypeStatus.textContent = enabled ? "开启" : "关闭";
-      if (enabled && !attackerASelect.value) attackerASelect.value = attackSelect.value;
+      if (enabled && !state.attackerA) {
+        state.attackerA = state.attack;
+        renderPicker("attackerA");
+      }
     }
 
     function renderResult() {
-      const attack = attackSelect.value;
-      const defenses = [defenseASelect.value, defenseBSelect.value].filter(Boolean);
+      const attack = state.attack;
+      const defenses = [state.defenseA, state.defenseB].filter(Boolean);
       const defenseTotal = calcDefenseTotal(attack, defenses);
       const attackerTypes = sameTypeToggle.checked
-        ? [attackerASelect.value, attackerBSelect.value].filter(Boolean)
+        ? [state.attackerA, state.attackerB].filter(Boolean)
         : [];
       const hasSameTypeBonus = attackerTypes.includes(attack);
       const total = defenseTotal * (hasSameTypeBonus ? 1.25 : 1);
 
       multiplier.textContent = `${formatMultiplier(total)} 倍`;
-      const parts = defenses.map(defense => {
-        const value = calcSingle(attack, defense);
-        if (value === 2) return `${defense}：克制`;
-        if (value === 0.5) return `${defense}：抵抗`;
-        return `${defense}：正常`;
-      });
+      detail.replaceChildren();
+      if (defenses.length === 0) {
+        detail.append(createResultChip("", "请选择受击系别"));
+      } else {
+        defenses.forEach(defense => {
+          const value = calcSingle(attack, defense);
+          if (value === 2) detail.append(createResultChip(defense, `${defense}：克制`, "is-good"));
+          else if (value === 0.5) detail.append(createResultChip(defense, `${defense}：抵抗`, "is-bad"));
+          else detail.append(createResultChip(defense, `${defense}：正常`));
+        });
+      }
       const bonusText = sameTypeToggle.checked
         ? (hasSameTypeBonus ? "本系加成：x1.25" : "本系加成：未触发")
         : "本系加成：未开启";
-      detail.textContent = `${parts.length ? parts.join("；") : "请选择受击系别"}；${bonusText}`;
+      detail.append(createResultChip("", bonusText, "is-bonus"));
     }
 
     function renderTable() {
       const table = document.getElementById("chart");
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
-      ["攻击\\受击", ...types].forEach(text => {
+      const corner = document.createElement("th");
+      corner.textContent = "攻击\\受击";
+      headRow.append(corner);
+      types.forEach(type => {
         const th = document.createElement("th");
-        th.textContent = text;
+        th.append(createTableBadge(type));
         headRow.append(th);
       });
       thead.append(headRow);
@@ -435,7 +754,7 @@
       types.forEach(attack => {
         const tr = document.createElement("tr");
         const rowHead = document.createElement("td");
-        rowHead.textContent = attack;
+        rowHead.append(createTableBadge(attack, true));
         tr.append(rowHead);
         types.forEach(defense => {
           const td = document.createElement("td");
@@ -449,23 +768,18 @@
       table.append(thead, tbody);
     }
 
-    fillSelect(attackSelect);
-    fillSelect(defenseASelect);
-    fillSelect(defenseBSelect, true);
-    fillSelect(attackerASelect, true);
-    fillSelect(attackerBSelect, true);
-    attackSelect.value = "火";
-    defenseASelect.value = "草";
-    defenseBSelect.value = "冰";
-    attackerASelect.value = "";
-    attackerBSelect.value = "";
-
-    [attackSelect, attackerASelect, attackerBSelect, defenseASelect, defenseBSelect].forEach(select => {
-      select.addEventListener("change", renderResult);
-    });
+    createPicker("attackPicker", "attack");
+    createPicker("defenseAPicker", "defenseA");
+    createPicker("defenseBPicker", "defenseB", true);
+    createPicker("attackerAPicker", "attackerA", true);
+    createPicker("attackerBPicker", "attackerB", true);
     sameTypeToggle.addEventListener("change", () => {
       updateSameTypeControls();
       renderResult();
+    });
+    document.addEventListener("click", () => closePickers());
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closePickers();
     });
 
     renderTable();
