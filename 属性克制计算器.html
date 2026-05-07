@@ -49,10 +49,37 @@
       line-height: 1.15;
       letter-spacing: 0;
     }
-    .note {
-      margin: 8px 0 0;
+    .mode-tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      margin: 0 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 10px 24px rgba(31, 41, 55, 0.08);
+    }
+    .mode-tab {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
       color: var(--muted);
-      font-size: 14px;
+      padding: 0 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .mode-tab.is-active {
+      background: var(--teal);
+      color: white;
+      box-shadow: 0 8px 18px rgba(15, 159, 143, 0.24);
+    }
+    .mode-panel {
+      display: none;
+    }
+    .mode-panel.is-active {
+      display: block;
     }
     .calculator {
       position: relative;
@@ -175,6 +202,14 @@
     .type-option.is-selected {
       background: var(--teal-soft);
     }
+    .type-option:disabled {
+      color: #9aa7b8;
+      cursor: not-allowed;
+      opacity: 0.46;
+    }
+    .type-option:disabled:hover {
+      background: transparent;
+    }
     .type-badge {
       display: inline-flex;
       align-items: center;
@@ -234,6 +269,87 @@
     }
     .same-type.is-disabled {
       background: #f3f6fa;
+    }
+    .query-panel {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      gap: 16px;
+      padding: 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .query-controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+    .query-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .query-summary .result-chip {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+    }
+    .query-results {
+      display: grid;
+      gap: 10px;
+    }
+    .query-group {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+    .query-group h2 {
+      margin: 0;
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+    .match-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+      gap: 8px;
+    }
+    .match-item {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--ink);
+      font-weight: 800;
+    }
+    .match-item.is-good {
+      border-color: rgba(22, 132, 85, 0.22);
+      background: var(--teal-soft);
+    }
+    .match-item.is-bad {
+      border-color: rgba(200, 67, 47, 0.22);
+      background: var(--accent-soft);
+    }
+    .match-item.is-strong {
+      border-color: rgba(37, 99, 235, 0.22);
+      background: #dbeafe;
     }
     .toggle-label {
       gap: 9px;
@@ -421,7 +537,9 @@
     @media (max-width: 760px) {
       main { width: min(100% - 20px, 1200px); padding-top: 20px; }
       header { display: block; }
+      .mode-tabs { display: grid; grid-template-columns: 1fr; width: 100%; }
       .controls, .same-type { grid-template-columns: 1fr; }
+      .query-controls { grid-template-columns: 1fr; }
       .result strong { font-size: 38px; }
     }
   </style>
@@ -431,49 +549,86 @@
     <header>
       <div>
         <h1>属性克制计算器</h1>
-        <p class="note">技能系别对受击方 1-2 个自身系别结算；本系加成可单独开启。</p>
       </div>
     </header>
 
-    <section class="calculator" aria-label="属性克制计算器">
-      <div class="controls">
-        <div class="field">
-          <span class="field-label">攻击技能系别</span>
-          <div id="attackPicker" class="type-picker"></div>
-        </div>
-        <div class="field">
-          <span class="field-label">受击系别 1</span>
-          <div id="defenseAPicker" class="type-picker"></div>
-        </div>
-        <div class="field">
-          <span class="field-label">受击系别 2</span>
-          <div id="defenseBPicker" class="type-picker"></div>
-        </div>
-        <div id="sameTypePanel" class="same-type">
-          <label class="toggle-label">
-            本系加成
-            <span class="switch-row">
-              <input id="sameTypeToggle" type="checkbox">
-              <span class="switch" aria-hidden="true"></span>
-              <span id="sameTypeStatus">关闭</span>
-            </span>
-          </label>
+    <div class="mode-tabs" role="tablist" aria-label="计算模式">
+      <button class="mode-tab is-active" type="button" data-mode="battle">一回合对战</button>
+      <button class="mode-tab" type="button" data-mode="attack">攻击面查询</button>
+      <button class="mode-tab" type="button" data-mode="defense">抵抗面查询</button>
+    </div>
+
+    <section id="battlePanel" class="mode-panel is-active" data-panel="battle">
+      <div class="calculator" aria-label="一回合对战计算器">
+        <div class="controls">
           <div class="field">
-            <span class="field-label">攻击方自身系别 1</span>
-            <div id="attackerAPicker" class="type-picker"></div>
+            <span class="field-label">攻击技能系别</span>
+            <div id="attackPicker" class="type-picker"></div>
           </div>
           <div class="field">
-            <span class="field-label">攻击方自身系别 2</span>
-            <div id="attackerBPicker" class="type-picker"></div>
+            <span class="field-label">受击系别 1</span>
+            <div id="defenseAPicker" class="type-picker"></div>
           </div>
+          <div class="field">
+            <span class="field-label">受击系别 2</span>
+            <div id="defenseBPicker" class="type-picker"></div>
+          </div>
+          <div id="sameTypePanel" class="same-type">
+            <label class="toggle-label">
+              本系加成
+              <span class="switch-row">
+                <input id="sameTypeToggle" type="checkbox">
+                <span class="switch" aria-hidden="true"></span>
+                <span id="sameTypeStatus">关闭</span>
+              </span>
+            </label>
+            <div class="field">
+              <span class="field-label">攻击方自身系别 1</span>
+              <div id="attackerAPicker" class="type-picker"></div>
+            </div>
+            <div class="field">
+              <span class="field-label">攻击方自身系别 2</span>
+              <div id="attackerBPicker" class="type-picker"></div>
+            </div>
+          </div>
+        </div>
+        <div class="result" aria-live="polite">
+          <div>
+            <div class="result-label">最终倍率</div>
+            <strong id="multiplier">1 倍</strong>
+          </div>
+          <div id="detail" class="result-detail">无克制变化</div>
         </div>
       </div>
-      <div class="result" aria-live="polite">
-        <div>
-          <div class="result-label">最终倍率</div>
-          <strong id="multiplier">1 倍</strong>
+    </section>
+
+    <section id="attackPanel" class="mode-panel" data-panel="attack">
+      <div class="query-panel" aria-label="攻击面查询">
+        <div class="query-controls">
+          <div class="field">
+            <span class="field-label">攻击技能系别</span>
+            <div id="attackQueryPicker" class="type-picker"></div>
+          </div>
         </div>
-        <div id="detail" class="result-detail">无克制变化</div>
+        <div id="attackQuerySummary" class="query-summary"></div>
+        <div id="attackQueryResult" class="query-results"></div>
+      </div>
+    </section>
+
+    <section id="defensePanel" class="mode-panel" data-panel="defense">
+      <div class="query-panel" aria-label="抵抗面查询">
+        <div class="query-controls">
+          <div class="field">
+            <span class="field-label">精灵系别 1</span>
+            <div id="defenseQueryAPicker" class="type-picker"></div>
+          </div>
+          <div class="field">
+            <span class="field-label">精灵系别 2</span>
+            <div id="defenseQueryBPicker" class="type-picker"></div>
+          </div>
+        </div>
+        <div id="defenseQuerySummary" class="query-summary"></div>
+        <div id="defenseQueryResult" class="query-results"></div>
       </div>
     </section>
 
@@ -544,14 +699,23 @@
       defenseA: "草",
       defenseB: "冰",
       attackerA: "",
-      attackerB: ""
+      attackerB: "",
+      attackQuery: "火",
+      defenseQueryA: "草",
+      defenseQueryB: "冰"
     };
     const pickers = {};
+    const modeTabs = document.querySelectorAll(".mode-tab");
+    const modePanels = document.querySelectorAll(".mode-panel");
     const sameTypePanel = document.getElementById("sameTypePanel");
     const sameTypeToggle = document.getElementById("sameTypeToggle");
     const sameTypeStatus = document.getElementById("sameTypeStatus");
     const multiplier = document.getElementById("multiplier");
     const detail = document.getElementById("detail");
+    const attackQuerySummary = document.getElementById("attackQuerySummary");
+    const attackQueryResult = document.getElementById("attackQueryResult");
+    const defenseQuerySummary = document.getElementById("defenseQuerySummary");
+    const defenseQueryResult = document.getElementById("defenseQueryResult");
 
     function iconSrc(type) {
       return `assets/type-icons/${typeIcons[type]}`;
@@ -610,7 +774,34 @@
       picker.button.append(caret);
       picker.menu.querySelectorAll(".type-option").forEach(option => {
         option.classList.toggle("is-selected", option.dataset.value === value);
+        const disabled = isOptionDisabled(key, option.dataset.value);
+        option.disabled = disabled;
+        option.setAttribute("aria-disabled", disabled ? "true" : "false");
       });
+    }
+
+    function renderAllPickers() {
+      Object.keys(pickers).forEach(renderPicker);
+    }
+
+    function isOptionDisabled(key, value) {
+      if (!value) return false;
+      if (key === "defenseB") return value === state.defenseA;
+      if (key === "attackerB") return value === state.attackerA;
+      if (key === "defenseQueryB") return value === state.defenseQueryA;
+      return false;
+    }
+
+    function normalizePairedTypes() {
+      if (state.defenseA && state.defenseA === state.defenseB) {
+        state.defenseB = "";
+      }
+      if (state.attackerA && state.attackerA === state.attackerB) {
+        state.attackerB = "";
+      }
+      if (state.defenseQueryA && state.defenseQueryA === state.defenseQueryB) {
+        state.defenseQueryB = "";
+      }
     }
 
     function setPickerDisabled(key, disabled) {
@@ -644,10 +835,12 @@
         optionButton.setAttribute("role", "option");
         optionButton.append(createTypeBadge(option.value, option.label));
         optionButton.addEventListener("click", () => {
+          if (isOptionDisabled(key, option.value)) return;
           state[key] = option.value;
-          renderPicker(key);
+          normalizePairedTypes();
+          renderAllPickers();
           closePickers();
-          renderResult();
+          renderAllViews();
         });
         menu.append(optionButton);
       });
@@ -704,8 +897,15 @@
       sameTypeStatus.textContent = enabled ? "开启" : "关闭";
       if (enabled && !state.attackerA) {
         state.attackerA = state.attack;
-        renderPicker("attackerA");
       }
+      normalizePairedTypes();
+      renderAllPickers();
+    }
+
+    function renderAllViews() {
+      renderResult();
+      renderAttackQuery();
+      renderDefenseQuery();
     }
 
     function renderResult() {
@@ -716,7 +916,8 @@
         ? [state.attackerA, state.attackerB].filter(Boolean)
         : [];
       const hasSameTypeBonus = attackerTypes.includes(attack);
-      const total = defenseTotal * (hasSameTypeBonus ? 1.25 : 1);
+      const sameTypeMultiplier = hasSameTypeBonus ? 1.25 : 1;
+      const total = defenseTotal * sameTypeMultiplier;
 
       multiplier.textContent = `${formatMultiplier(total)} 倍`;
       detail.replaceChildren();
@@ -736,6 +937,82 @@
       detail.append(createResultChip("", bonusText, "is-bonus"));
     }
 
+    function createQueryItem(type, variant = "") {
+      const item = document.createElement("div");
+      item.className = `match-item ${variant}`.trim();
+      item.append(createTypeBadge(type));
+      return item;
+    }
+
+    function createQueryGroup(title, items, variant = "") {
+      const group = document.createElement("section");
+      group.className = "query-group";
+      const heading = document.createElement("h2");
+      heading.textContent = `${title}（${items.length}）`;
+      const list = document.createElement("div");
+      list.className = "match-list";
+      items.forEach(item => list.append(createQueryItem(item.type, variant)));
+      group.append(heading, list);
+      return group;
+    }
+
+    function groupByValue(items, definitions) {
+      return definitions.map(definition => ({
+        ...definition,
+        items: items.filter(item => item.value === definition.value)
+      }));
+    }
+
+    function sortByTypeOrder(a, b) {
+      return types.indexOf(a.type) - types.indexOf(b.type);
+    }
+
+    function renderAttackQuery() {
+      const attack = state.attackQuery;
+      const items = types
+        .map(type => ({ type, value: calcSingle(attack, type) }))
+        .sort((a, b) => b.value - a.value || sortByTypeOrder(a, b));
+      const strong = items.filter(item => item.value === 2).length;
+      const neutral = items.filter(item => item.value === 1).length;
+      const resisted = items.filter(item => item.value === 0.5).length;
+      attackQuerySummary.replaceChildren(
+        createResultChip(attack, `${attack} 技能`),
+        createResultChip("", `克制 ${strong}`),
+        createResultChip("", `正常 ${neutral}`),
+        createResultChip("", `被抵抗 ${resisted}`)
+      );
+      attackQueryResult.replaceChildren();
+      groupByValue(items, [
+        { title: "克制面 x2", value: 2, variant: "is-good" },
+        { title: "正常面 x1", value: 1, variant: "" },
+        { title: "抵抗面 x0.5", value: 0.5, variant: "is-bad" }
+      ]).forEach(group => attackQueryResult.append(createQueryGroup(group.title, group.items, group.variant)));
+    }
+
+    function renderDefenseQuery() {
+      const defenses = [state.defenseQueryA, state.defenseQueryB].filter(Boolean);
+      const items = types
+        .map(type => ({ type, value: calcDefenseTotal(type, defenses) }))
+        .sort((a, b) => a.value - b.value || sortByTypeOrder(a, b));
+      const resistant = items.filter(item => item.value < 1).length;
+      const neutral = items.filter(item => item.value === 1).length;
+      const weak = items.filter(item => item.value > 1).length;
+      defenseQuerySummary.replaceChildren(
+        ...defenses.map(type => createResultChip(type, type)),
+        createResultChip("", `抵抗 ${resistant}`),
+        createResultChip("", `正常 ${neutral}`),
+        createResultChip("", `弱点 ${weak}`)
+      );
+      defenseQueryResult.replaceChildren();
+      groupByValue(items, [
+        { title: "强抵抗，受到 x0.25", value: 0.25, variant: "is-good" },
+        { title: "抵抗，受到 x0.5", value: 0.5, variant: "is-good" },
+        { title: "正常，受到 x1", value: 1, variant: "" },
+        { title: "被克制，受到 x2", value: 2, variant: "is-bad" },
+        { title: "严重被克制，受到 x3", value: 3, variant: "is-bad" }
+      ]).forEach(group => defenseQueryResult.append(createQueryGroup(group.title, group.items, group.variant)));
+    }
+
     function renderTable() {
       const table = document.getElementById("chart");
       const thead = document.createElement("thead");
@@ -743,20 +1020,22 @@
       const corner = document.createElement("th");
       corner.textContent = "攻击\\受击";
       headRow.append(corner);
-      types.forEach(type => {
+      types.forEach((type, colIndex) => {
         const th = document.createElement("th");
+        th.dataset.col = String(colIndex);
         th.append(createTableBadge(type));
         headRow.append(th);
       });
       thead.append(headRow);
 
       const tbody = document.createElement("tbody");
-      types.forEach(attack => {
+      types.forEach((attack, rowIndex) => {
         const tr = document.createElement("tr");
         const rowHead = document.createElement("td");
+        rowHead.dataset.row = String(rowIndex);
         rowHead.append(createTableBadge(attack, true));
         tr.append(rowHead);
-        types.forEach(defense => {
+        types.forEach((defense, colIndex) => {
           const td = document.createElement("td");
           const value = chart[attack][defense];
           td.textContent = value;
@@ -773,9 +1052,20 @@
     createPicker("defenseBPicker", "defenseB", true);
     createPicker("attackerAPicker", "attackerA", true);
     createPicker("attackerBPicker", "attackerB", true);
+    createPicker("attackQueryPicker", "attackQuery");
+    createPicker("defenseQueryAPicker", "defenseQueryA");
+    createPicker("defenseQueryBPicker", "defenseQueryB", true);
     sameTypeToggle.addEventListener("change", () => {
       updateSameTypeControls();
-      renderResult();
+      renderAllViews();
+    });
+    modeTabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const mode = tab.dataset.mode;
+        modeTabs.forEach(item => item.classList.toggle("is-active", item === tab));
+        modePanels.forEach(panel => panel.classList.toggle("is-active", panel.dataset.panel === mode));
+        closePickers();
+      });
     });
     document.addEventListener("click", () => closePickers());
     document.addEventListener("keydown", event => {
@@ -784,7 +1074,7 @@
 
     renderTable();
     updateSameTypeControls();
-    renderResult();
+    renderAllViews();
   </script>
 </body>
 </html>
