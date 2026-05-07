@@ -326,16 +326,16 @@
     }
     .match-list {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 7px;
     }
     .match-item {
       display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: 8px;
-      min-height: 36px;
-      padding: 6px 10px;
+      min-height: 34px;
+      padding: 5px 9px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: white;
@@ -395,6 +395,13 @@
       top: 0;
       z-index: 1;
     }
+    .wheel-head-cell {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      height: 100%;
+      font-weight: 900;
+    }
     .wheel-table th:first-child,
     .wheel-table td:first-child {
       position: static;
@@ -420,6 +427,7 @@
     .combo-badges {
       display: inline-flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 4px;
       min-width: 0;
     }
@@ -1199,10 +1207,11 @@
       detail.append(createResultChip("", bonusText, "is-bonus"));
     }
 
-    function createQueryItem(type, variant = "") {
+    function createQueryItem(entry, variant = "") {
       const item = document.createElement("div");
       item.className = `match-item ${variant}`.trim();
-      item.append(createTypeBadge(type));
+      const combo = entry.types ? entry : { types: [entry.type] };
+      item.append(createComboBadges(combo));
       return item;
     }
 
@@ -1213,7 +1222,7 @@
       heading.textContent = `${title}（${items.length}）`;
       const list = document.createElement("div");
       list.className = "match-list";
-      items.forEach(item => list.append(createQueryItem(item.type, variant)));
+      items.forEach(item => list.append(createQueryItem(item, variant)));
       group.append(heading, list);
       return group;
     }
@@ -1236,25 +1245,38 @@
       return types.indexOf(a.type) - types.indexOf(b.type);
     }
 
+    function sortByComboOrder(a, b) {
+      const lengthDiff = a.types.length - b.types.length;
+      if (lengthDiff) return lengthDiff;
+      for (let index = 0; index < a.types.length; index += 1) {
+        const typeDiff = types.indexOf(a.types[index]) - types.indexOf(b.types[index]);
+        if (typeDiff) return typeDiff;
+      }
+      return 0;
+    }
+
     function renderAttackQuery() {
       const attack = state.attackQuery;
-      const items = types
-        .map(type => ({ type, value: calcSingle(attack, type) }))
-        .sort((a, b) => b.value - a.value || sortByTypeOrder(a, b));
-      const strong = items.filter(item => item.value === 2).length;
+      const items = typeCombos
+        .map(combo => ({ ...combo, value: calcDefenseTotal(attack, combo.types) }))
+        .sort((a, b) => b.value - a.value || sortByComboOrder(a, b));
+      const strong = items.filter(item => item.value > 1).length;
       const neutral = items.filter(item => item.value === 1).length;
-      const resisted = items.filter(item => item.value === 0.5).length;
+      const resisted = items.filter(item => item.value < 1).length;
       attackQuerySummary.replaceChildren(
         createResultChip(attack, `${attack} 技能`),
+        createResultChip("", `组合 ${items.length}`),
         createResultChip("", `克制 ${strong}`),
         createResultChip("", `正常 ${neutral}`),
         createResultChip("", `被抵抗 ${resisted}`)
       );
       attackQueryResult.replaceChildren();
       groupByValue(items, [
+        { title: "双重克制面 x3", value: 3, variant: "is-strong" },
         { title: "克制面 x2", value: 2, variant: "is-good" },
         { title: "正常面 x1", value: 1, variant: "" },
-        { title: "抵抗面 x0.5", value: 0.5, variant: "is-bad" }
+        { title: "抵抗面 x0.5", value: 0.5, variant: "is-bad" },
+        { title: "双重抵抗面 x0.25", value: 0.25, variant: "is-bad" }
       ]).forEach(group => attackQueryResult.append(createQueryGroup(group.title, group.items, group.variant)));
     }
 
@@ -1300,7 +1322,10 @@
       const headerRow = document.createElement("tr");
       ["排名", "系别", "综合", "输出", "承伤", "克制", "被抗", "抵抗", "弱点"].forEach(text => {
         const th = document.createElement("th");
-        th.textContent = text;
+        const headCell = document.createElement("span");
+        headCell.className = "wheel-head-cell";
+        headCell.textContent = text;
+        th.append(headCell);
         headerRow.append(th);
       });
       header.append(headerRow);
