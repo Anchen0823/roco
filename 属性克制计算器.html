@@ -56,29 +56,34 @@
     }
     .mode-tabs {
       display: inline-flex;
-      gap: 4px;
-      padding: 4px;
+      gap: 8px;
+      padding: 0;
       margin: 0 0 18px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface-strong);
-      box-shadow: var(--shadow-soft);
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
     .mode-tab {
-      min-height: 38px;
+      min-height: 40px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 10px;
       background: transparent;
       color: var(--muted);
-      padding: 0 14px;
+      padding: 0 16px;
       font: inherit;
       font-weight: 800;
       cursor: pointer;
+      transition: background 0.16s ease, color 0.16s ease;
+    }
+    .mode-tab:hover {
+      background: rgba(15, 159, 143, 0.08);
+      color: var(--ink);
     }
     .mode-tab.is-active {
-      background: var(--teal);
-      color: white;
-      box-shadow: 0 8px 18px rgba(15, 159, 143, 0.24);
+      background: rgba(15, 159, 143, 0.14);
+      color: #0f766e;
+      box-shadow: inset 0 0 0 1px rgba(15, 159, 143, 0.12);
     }
     .mode-panel {
       display: none;
@@ -411,27 +416,32 @@
     }
     .wheel-sort {
       display: inline-flex;
-      gap: 4px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface-strong);
+      gap: 6px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
     }
     .wheel-sort-button {
       min-height: 32px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 9px;
       background: transparent;
       color: var(--muted);
-      padding: 0 10px;
+      padding: 0 12px;
       font: inherit;
       font-size: 13px;
       font-weight: 900;
       cursor: pointer;
+      transition: background 0.16s ease, color 0.16s ease;
+    }
+    .wheel-sort-button:hover {
+      background: rgba(15, 159, 143, 0.08);
+      color: var(--ink);
     }
     .wheel-sort-button.is-active {
-      background: var(--teal);
-      color: white;
+      background: rgba(15, 159, 143, 0.14);
+      color: #0f766e;
     }
     .query-results {
       display: grid;
@@ -464,9 +474,9 @@
       align-items: center;
       justify-content: center;
       min-height: 28px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: white;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
       color: var(--muted);
       padding: 0 10px;
       font: inherit;
@@ -474,11 +484,11 @@
       font-weight: 900;
       white-space: nowrap;
       cursor: pointer;
+      transition: background 0.16s ease, color 0.16s ease;
     }
     .query-toggle:hover {
-      border-color: #b8c4d4;
       color: var(--ink);
-      background: #fbfdff;
+      background: rgba(15, 159, 143, 0.08);
     }
     .query-group.is-collapsible .query-toggle {
       display: inline-flex;
