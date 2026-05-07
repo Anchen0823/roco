@@ -361,7 +361,9 @@
       align-items: start;
     }
     .wheel-board {
+      max-height: clamp(360px, calc(100vh - 330px), 780px);
       overflow: auto;
+      scrollbar-gutter: stable;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: white;
@@ -393,7 +395,7 @@
     .wheel-table th {
       position: sticky;
       top: 0;
-      z-index: 1;
+      z-index: 3;
     }
     .wheel-head-cell {
       display: flex;
@@ -402,7 +404,6 @@
       height: 100%;
       font-weight: 900;
     }
-    .wheel-table th:first-child,
     .wheel-table td:first-child {
       position: static;
       padding-left: 9px;
@@ -681,6 +682,7 @@
     @media (max-width: 1020px) {
       .calculator { grid-template-columns: 1fr; }
       .wheel-layout { grid-template-columns: 1fr; }
+      .wheel-board { max-height: 560px; }
       .wheel-detail { position: static; }
       .result { min-height: 132px; }
     }
