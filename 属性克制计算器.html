@@ -305,6 +305,36 @@
       background: white;
       color: var(--ink);
     }
+    .wheel-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+    }
+    .wheel-sort {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+    .wheel-sort-button {
+      min-height: 32px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      padding: 0 10px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .wheel-sort-button.is-active {
+      background: var(--teal);
+      color: white;
+    }
     .query-results {
       display: grid;
       gap: 10px;
@@ -361,9 +391,7 @@
       align-items: start;
     }
     .wheel-board {
-      max-height: clamp(360px, calc(100vh - 330px), 780px);
-      overflow: auto;
-      scrollbar-gutter: stable;
+      overflow: visible;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: white;
@@ -396,6 +424,7 @@
       position: sticky;
       top: 0;
       z-index: 3;
+      box-shadow: 0 1px 0 var(--line), 0 8px 14px rgba(31, 41, 55, 0.08);
     }
     .wheel-head-cell {
       display: flex;
@@ -682,7 +711,6 @@
     @media (max-width: 1020px) {
       .calculator { grid-template-columns: 1fr; }
       .wheel-layout { grid-template-columns: 1fr; }
-      .wheel-board { max-height: 560px; }
       .wheel-detail { position: static; }
       .result { min-height: 132px; }
     }
@@ -787,7 +815,14 @@
 
     <section id="wheelPanel" class="mode-panel" data-panel="wheel">
       <div class="query-panel" aria-label="单系与双系车轮战榜单">
-        <div class="query-summary" id="wheelSummary"></div>
+        <div class="wheel-toolbar">
+          <div class="query-summary" id="wheelSummary"></div>
+          <div class="wheel-sort" aria-label="车轮榜单排序方式">
+            <button class="wheel-sort-button is-active" type="button" data-wheel-sort="score">综合</button>
+            <button class="wheel-sort-button" type="button" data-wheel-sort="attack">输出</button>
+            <button class="wheel-sort-button" type="button" data-wheel-sort="defense">承伤</button>
+          </div>
+        </div>
         <div class="wheel-layout">
           <div class="wheel-board">
             <table id="wheelTable" class="wheel-table" aria-label="车轮战属性组合榜单"></table>
@@ -890,7 +925,8 @@
       attackQuery: "火",
       defenseQueryA: "草",
       defenseQueryB: "冰",
-      wheelSelected: ""
+      wheelSelected: "",
+      wheelSort: "score"
     };
     const pickers = {};
     const modeTabs = document.querySelectorAll(".mode-tab");
@@ -916,6 +952,7 @@
     const wheelAttackList = document.getElementById("wheelAttackList");
     const wheelDefenseSummary = document.getElementById("wheelDefenseSummary");
     const wheelDefenseList = document.getElementById("wheelDefenseList");
+    const wheelSortButtons = document.querySelectorAll(".wheel-sort-button");
 
     function iconSrc(type) {
       return `assets/type-icons/${typeIcons[type]}`;
@@ -1124,19 +1161,9 @@
       return { ...combo, matchups, attack, defense, score };
     }
 
-    const wheelRanks = typeCombos
-      .map(scoreCombo)
-      .sort((a, b) =>
-        b.score - a.score ||
-        b.attack.strong - a.attack.strong ||
-        a.defense.strong - b.defense.strong ||
-        comboTypeOrder(a) - comboTypeOrder(b)
-      );
-    wheelRanks.forEach((combo, index) => {
-      combo.rank = index + 1;
-    });
+    const wheelEntries = typeCombos.map(scoreCombo);
     if (!state.wheelSelected) {
-      state.wheelSelected = wheelRanks[0].id;
+      state.wheelSelected = getWheelRanks()[0].id;
     }
 
     function formatMultiplier(value) {
@@ -1177,6 +1204,7 @@
       renderResult();
       renderAttackQuery();
       renderDefenseQuery();
+      renderWheelSortButtons();
       renderWheelDetail();
     }
 
@@ -1319,7 +1347,39 @@
       return td;
     }
 
+    function compareWheelCombos(a, b) {
+      if (state.wheelSort === "attack") {
+        return b.attack.avg - a.attack.avg ||
+          b.attack.strong - a.attack.strong ||
+          a.defense.avg - b.defense.avg ||
+          comboTypeOrder(a) - comboTypeOrder(b);
+      }
+      if (state.wheelSort === "defense") {
+        return a.defense.avg - b.defense.avg ||
+          b.defense.resisted - a.defense.resisted ||
+          b.attack.avg - a.attack.avg ||
+          comboTypeOrder(a) - comboTypeOrder(b);
+      }
+      return b.score - a.score ||
+        b.attack.strong - a.attack.strong ||
+        a.defense.strong - b.defense.strong ||
+        comboTypeOrder(a) - comboTypeOrder(b);
+    }
+
+    function getWheelRanks() {
+      return [...wheelEntries]
+        .sort(compareWheelCombos)
+        .map((combo, index) => ({ ...combo, rank: index + 1 }));
+    }
+
+    function renderWheelSortButtons() {
+      wheelSortButtons.forEach(button => {
+        button.classList.toggle("is-active", button.dataset.wheelSort === state.wheelSort);
+      });
+    }
+
     function renderWheelTable() {
+      const wheelRanks = getWheelRanks();
       const header = document.createElement("thead");
       const headerRow = document.createElement("tr");
       ["排名", "系别", "综合", "输出", "承伤", "克制", "被抗", "抵抗", "弱点"].forEach(text => {
@@ -1381,11 +1441,11 @@
     }
 
     function renderWheelDetail() {
+      const wheelRanks = getWheelRanks();
       const selected = wheelRanks.find(combo => combo.id === state.wheelSelected) || wheelRanks[0];
       wheelSummary.replaceChildren(
         createResultChip("", `共 ${typeCombos.length} 种单系/双系组合`),
-        createResultChip("", "进攻取自身系别中的最高伤害"),
-        createResultChip("", "防守按对手自身系别中的最高伤害承伤")
+        createResultChip("", state.wheelSort === "attack" ? "按平均输出排序" : state.wheelSort === "defense" ? "按平均承伤排序" : "按综合分排序")
       );
       wheelDetailTitle.textContent = `#${selected.rank} ${selected.name}`;
       wheelDetailTypes.replaceChildren(...selected.types.map(type => createResultChip(type, type)));
@@ -1451,6 +1511,14 @@
     sameTypeToggle.addEventListener("change", () => {
       updateSameTypeControls();
       renderAllViews();
+    });
+    wheelSortButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        state.wheelSort = button.dataset.wheelSort;
+        renderWheelSortButtons();
+        renderWheelTable();
+        renderWheelDetail();
+      });
     });
     modeTabs.forEach(tab => {
       tab.addEventListener("click", () => {
