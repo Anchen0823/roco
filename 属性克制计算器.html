@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>属性克制计算器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-soft: #f9fbff;
+      --ink: #1f2937;
+      --muted: #64748b;
+      --line: #d8e0ea;
+      --line-strong: #b9c6d8;
+      --accent: #ea6a47;
+      --accent-soft: #fff0ea;
+      --teal: #0f9f8f;
+      --teal-soft: #e7f7f4;
+      --good: #168455;
+      --bad: #c8432f;
+      --shadow: 0 18px 40px rgba(31, 41, 55, 0.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 159, 143, 0.16), transparent 340px),
+        linear-gradient(135deg, #fff8f3 0%, var(--bg) 42%, #eef6ff 100%);
+    }
+    main {
+      width: min(1200px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 42px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 36px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    .note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .calculator {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      margin-bottom: 18px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      min-width: 0;
+    }
+    label, .toggle-label {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0 34px 0 12px;
+      font: inherit;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+    }
+    select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(15, 159, 143, 0.14);
+    }
+    select:disabled {
+      opacity: 0.46;
+      cursor: not-allowed;
+      background: #eef2f7;
+    }
+    .same-type {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 180px repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+    .toggle-label {
+      gap: 9px;
+    }
+    .switch-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+    .switch-row input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .switch {
+      width: 48px;
+      height: 28px;
+      padding: 3px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      transition: background 0.18s ease;
+    }
+    .switch::before {
+      content: "";
+      display: block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 7px rgba(15, 23, 42, 0.24);
+      transition: transform 0.18s ease;
+    }
+    .switch-row input:checked + .switch {
+      background: var(--teal);
+    }
+    .switch-row input:checked + .switch::before {
+      transform: translateX(20px);
+    }
+    .result {
+      display: grid;
+      align-content: space-between;
+      min-height: 152px;
+      padding: 16px;
+      border-radius: 8px;
+      color: white;
+      background: linear-gradient(145deg, #172033 0%, #24364f 58%, #0d796f 100%);
+      overflow: hidden;
+      position: relative;
+    }
+    .result::after {
+      content: "";
+      position: absolute;
+      right: -46px;
+      bottom: -58px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.10);
+    }
+    .result-label {
+      color: #c7d2fe;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .result strong {
+      display: block;
+      margin: 8px 0 10px;
+      font-size: 44px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+    .result span {
+      position: relative;
+      z-index: 1;
+      color: #e5edf8;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .table-wrap {
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 940px;
+      font-size: 14px;
+    }
+    th, td {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      width: 48px;
+      height: 42px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #edf3fb;
+      color: #334155;
+      font-weight: 800;
+    }
+    th:first-child {
+      left: 0;
+      z-index: 2;
+    }
+    td:first-child {
+      position: sticky;
+      left: 0;
+      background: #f7faff;
+      color: #334155;
+      font-weight: 800;
+    }
+    tbody tr:nth-child(even) td:not(:first-child) {
+      background: #fbfdff;
+    }
+    .super, .resist, .normal {
+      font-weight: 900;
+    }
+    .super {
+      color: var(--good);
+      background: var(--teal-soft);
+    }
+    .resist {
+      color: var(--bad);
+      background: var(--accent-soft);
+    }
+    .normal { color: #b6c0ce; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin: 12px 2px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    @media (max-width: 1020px) {
+      .calculator { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .same-type { grid-template-columns: 1fr 1fr 1fr; }
+      .result { min-height: 130px; }
+    }
+    @media (max-width: 720px) {
+      main { width: min(100% - 20px, 1200px); padding-top: 20px; }
+      header { display: block; }
+      .controls, .same-type { grid-template-columns: 1fr; }
+      .result strong { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>属性克制计算器</h1>
+        <p class="note">技能系别对受击方 1-2 个自身系别结算；本系加成可单独开启。</p>
+      </div>
+    </header>
+
+    <section class="calculator" aria-label="属性克制计算器">
+      <div class="controls">
+        <label>攻击技能系别<select id="attack"></select></label>
+        <label>受击系别 1<select id="defenseA"></select></label>
+        <label>受击系别 2<select id="defenseB"></select></label>
+        <div class="same-type">
+          <label class="toggle-label">
+            本系加成
+            <span class="switch-row">
+              <input id="sameTypeToggle" type="checkbox">
+              <span class="switch" aria-hidden="true"></span>
+              <span id="sameTypeStatus">关闭</span>
+            </span>
+          </label>
+          <label>攻击方自身系别 1<select id="attackerA"></select></label>
+          <label>攻击方自身系别 2<select id="attackerB"></select></label>
+        </div>
+      </div>
+      <div class="result" aria-live="polite">
+        <div>
+          <div class="result-label">最终倍率</div>
+          <strong id="multiplier">1 倍</strong>
+        </div>
+        <span id="detail">无克制变化</span>
+      </div>
+    </section>
+
+    <div class="table-wrap">
+      <table id="chart" aria-label="属性克制表"></table>
+    </div>
+    <div class="legend">
+      <span class="pill"><span class="super">2</span>造成 2 倍伤害</span>
+      <span class="pill"><span class="resist">0.5</span>造成 0.5 倍伤害</span>
+      <span class="pill"><span class="normal">1</span>正常伤害</span>
+      <span>双系受击：双克制 3 倍，双抵抗 0.25 倍，一克一抵 1 倍。</span>
+      <span>本系加成：开启后，技能系别与攻击方自身任一系别相同则再乘 1.25 倍。</span>
+    </div>
+  </main>
+
+  <script>
+    const types = ["火","水","草","光","恶魔","幽灵","普通","地面","冰","龙","电","毒","虫","武","翼","萌","机械","幻"];
+    const rows = [
+      ".RG....RGR..G...G.",
+      "G.R....GRR......G.",
+      "RG.G...G.R.RR.R.R.",
+      "..R.GG..R.........",
+      "...RRG.....G.R.G..",
+      "...GRGR..........G",
+      ".....R.R........R.",
+      "G.R.....G.GG.R....",
+      "R.G....GRG....G.R.",
+      ".........G......R.",
+      ".GR....R.RR...G...",
+      "..G..R.R...R...GR.",
+      "R.G.GR.....R.RRRRG",
+      "....GRGGG..RR.RRGR",
+      "..G....R.RR.GG..R.",
+      "R...G....G.R.G..R.",
+      "RR.....GG.R....GR.",
+      "...R.......G.G..RR"
+    ];
+    const chart = Object.fromEntries(types.map((attack, i) => [
+      attack,
+      Object.fromEntries(types.map((defense, j) => {
+        const cell = rows[i][j];
+        return [defense, cell === "G" ? 2 : cell === "R" ? 0.5 : 1];
+      }))
+    ]));
+
+    const attackSelect = document.getElementById("attack");
+    const attackerASelect = document.getElementById("attackerA");
+    const attackerBSelect = document.getElementById("attackerB");
+    const defenseASelect = document.getElementById("defenseA");
+    const defenseBSelect = document.getElementById("defenseB");
+    const sameTypeToggle = document.getElementById("sameTypeToggle");
+    const sameTypeStatus = document.getElementById("sameTypeStatus");
+    const multiplier = document.getElementById("multiplier");
+    const detail = document.getElementById("detail");
+
+    function fillSelect(select, includeNone = false) {
+      select.innerHTML = "";
+      if (includeNone) select.add(new Option("不选择", ""));
+      types.forEach(type => select.add(new Option(type, type)));
+    }
+
+    function calcSingle(attack, defense) {
+      return chart[attack][defense];
+    }
+
+    function calcDefenseTotal(attack, defenses) {
+      const values = defenses.filter(Boolean).map(defense => calcSingle(attack, defense));
+      const superCount = values.filter(value => value === 2).length;
+      const resistCount = values.filter(value => value === 0.5).length;
+      if (superCount > 0 && resistCount > 0) return 1;
+      if (superCount > 0) return 1 + superCount;
+      if (resistCount > 0) return 0.5 ** resistCount;
+      return 1;
+    }
+
+    function formatMultiplier(value) {
+      return Number.parseFloat(value.toFixed(4)).toString();
+    }
+
+    function updateSameTypeControls() {
+      const enabled = sameTypeToggle.checked;
+      attackerASelect.disabled = !enabled;
+      attackerBSelect.disabled = !enabled;
+      sameTypeStatus.textContent = enabled ? "开启" : "关闭";
+      if (enabled && !attackerASelect.value) attackerASelect.value = attackSelect.value;
+    }
+
+    function renderResult() {
+      const attack = attackSelect.value;
+      const defenses = [defenseASelect.value, defenseBSelect.value].filter(Boolean);
+      const defenseTotal = calcDefenseTotal(attack, defenses);
+      const attackerTypes = sameTypeToggle.checked
+        ? [attackerASelect.value, attackerBSelect.value].filter(Boolean)
+        : [];
+      const hasSameTypeBonus = attackerTypes.includes(attack);
+      const total = defenseTotal * (hasSameTypeBonus ? 1.25 : 1);
+
+      multiplier.textContent = `${formatMultiplier(total)} 倍`;
+      const parts = defenses.map(defense => {
+        const value = calcSingle(attack, defense);
+        if (value === 2) return `${defense}：克制`;
+        if (value === 0.5) return `${defense}：抵抗`;
+        return `${defense}：正常`;
+      });
+      const bonusText = sameTypeToggle.checked
+        ? (hasSameTypeBonus ? "本系加成：x1.25" : "本系加成：未触发")
+        : "本系加成：未开启";
+      detail.textContent = `${parts.length ? parts.join("；") : "请选择受击系别"}；${bonusText}`;
+    }
+
+    function renderTable() {
+      const table = document.getElementById("chart");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      ["攻击\\受击", ...types].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headRow.append(th);
+      });
+      thead.append(headRow);
+
+      const tbody = document.createElement("tbody");
+      types.forEach(attack => {
+        const tr = document.createElement("tr");
+        const rowHead = document.createElement("td");
+        rowHead.textContent = attack;
+        tr.append(rowHead);
+        types.forEach(defense => {
+          const td = document.createElement("td");
+          const value = chart[attack][defense];
+          td.textContent = value;
+          td.className = value === 2 ? "super" : value === 0.5 ? "resist" : "normal";
+          tr.append(td);
+        });
+        tbody.append(tr);
+      });
+      table.append(thead, tbody);
+    }
+
+    fillSelect(attackSelect);
+    fillSelect(defenseASelect);
+    fillSelect(defenseBSelect, true);
+    fillSelect(attackerASelect, true);
+    fillSelect(attackerBSelect, true);
+    attackSelect.value = "火";
+    defenseASelect.value = "草";
+    defenseBSelect.value = "冰";
+    attackerASelect.value = "";
+    attackerBSelect.value = "";
+
+    [attackSelect, attackerASelect, attackerBSelect, defenseASelect, defenseBSelect].forEach(select => {
+      select.addEventListener("change", renderResult);
+    });
+    sameTypeToggle.addEventListener("change", () => {
+      updateSameTypeControls();
+      renderResult();
+    });
+
+    renderTable();
+    updateSameTypeControls();
+    renderResult();
+  </script>
+</body>
+</html>
