@@ -32,9 +32,10 @@
         linear-gradient(135deg, #fff8f3 0%, var(--bg) 42%, #eef6ff 100%);
     }
     main {
-      width: min(1200px, calc(100% - 28px));
+      --page-pad: clamp(18px, 2.4vw, 44px);
+      width: 100%;
       margin: 0 auto;
-      padding: 28px 0 42px;
+      padding: 28px var(--page-pad) 42px;
     }
     header {
       display: flex;
@@ -94,10 +95,16 @@
       padding: 16px;
       background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
+      box-shadow: none;
       backdrop-filter: blur(12px);
+      margin-right: calc(-1 * var(--page-pad));
       margin-bottom: 18px;
+      margin-left: calc(-1 * var(--page-pad));
+      padding-right: var(--page-pad);
+      padding-left: var(--page-pad);
     }
     .controls {
       display: grid;
@@ -239,6 +246,99 @@
       color: #64748b;
       font-weight: 900;
     }
+    .pet-picker {
+      position: relative;
+      min-width: 0;
+    }
+    .pet-picker.is-open {
+      z-index: 100;
+    }
+    .pet-search-input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 6px 10px;
+      font: inherit;
+      font-weight: 800;
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+    .pet-search-input:hover {
+      border-color: #b8c4d4;
+      background: #fbfdff;
+    }
+    .pet-search-input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(15, 159, 143, 0.14);
+    }
+    .pet-search-input:disabled {
+      opacity: 0.52;
+      cursor: not-allowed;
+      background: #eef2f7;
+    }
+    .pet-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      max-height: 282px;
+      overflow: auto;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.20);
+    }
+    .pet-picker.is-open .pet-menu {
+      display: grid;
+    }
+    .pet-option {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ink);
+      padding: 7px 8px;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .pet-option:hover {
+      background: var(--teal-soft);
+    }
+    .pet-option > span:first-child {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    .pet-option-title {
+      overflow: hidden;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pet-option-meta,
+    .pet-empty {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pet-empty {
+      padding: 10px 8px;
+    }
+    .result-chip.is-pet {
+      background: #eef6ff;
+    }
     .table-type {
       display: inline-grid;
       justify-items: center;
@@ -279,11 +379,17 @@
       display: grid;
       gap: 16px;
       padding: 16px;
+      padding-right: var(--page-pad);
+      padding-left: var(--page-pad);
+      margin-right: calc(-1 * var(--page-pad));
       margin-bottom: 18px;
+      margin-left: calc(-1 * var(--page-pad));
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
       background: rgba(255, 255, 255, 0.9);
-      box-shadow: var(--shadow);
+      box-shadow: none;
       backdrop-filter: blur(12px);
     }
     .query-controls {
@@ -347,6 +453,13 @@
       border-radius: 8px;
       background: var(--panel-soft);
     }
+    .query-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
     .query-group h2 {
       margin: 0;
       color: #334155;
@@ -354,10 +467,39 @@
       line-height: 1.35;
       letter-spacing: 0;
     }
+    .query-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      color: var(--muted);
+      padding: 0 10px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .query-toggle:hover {
+      border-color: #b8c4d4;
+      color: var(--ink);
+      background: #fbfdff;
+    }
+    .query-group.is-collapsible .query-toggle {
+      display: inline-flex;
+    }
     .match-list {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
       gap: 7px;
+      transition: max-height 0.18s ease;
+    }
+    .match-list.is-collapsed {
+      max-height: var(--collapsed-height);
+      overflow: hidden;
     }
     .match-item {
       display: flex;
@@ -635,10 +777,14 @@
       position: relative;
       z-index: 1;
       overflow: auto;
+      margin-right: calc(-1 * var(--page-pad));
+      margin-left: calc(-1 * var(--page-pad));
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
+      box-shadow: none;
     }
     table {
       border-collapse: separate;
@@ -709,6 +855,27 @@
       gap: 6px;
     }
     @media (max-width: 1020px) {
+      main {
+        --page-pad: 0px;
+        width: min(1200px, calc(100% - 28px));
+        padding: 28px 0 42px;
+      }
+      .calculator,
+      .query-panel {
+        margin-right: 0;
+        margin-left: 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+      .table-wrap {
+        margin-right: 0;
+        margin-left: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
       .calculator { grid-template-columns: 1fr; }
       .wheel-layout { grid-template-columns: 1fr; }
       .wheel-detail { position: static; }
@@ -800,6 +967,13 @@
       <div class="query-panel" aria-label="抵抗面查询">
         <div class="query-controls">
           <div class="field">
+            <span class="field-label">精灵</span>
+            <div id="petPicker" class="pet-picker">
+              <input id="petSearchInput" class="pet-search-input" type="search" autocomplete="off" placeholder="搜索精灵名 / 图鉴号">
+              <div id="petSearchMenu" class="pet-menu" role="listbox"></div>
+            </div>
+          </div>
+          <div class="field">
             <span class="field-label">精灵系别 1</span>
             <div id="defenseQueryAPicker" class="type-picker"></div>
           </div>
@@ -866,6 +1040,7 @@
     </section>
   </main>
 
+  <script src="data/pet-index.js"></script>
   <script>
     const types = ["火","水","草","光","恶魔","幽灵","普通","地面","冰","龙","电","毒","虫","武","翼","萌","机械","幻"];
     const typeIcons = {
@@ -925,6 +1100,7 @@
       attackQuery: "火",
       defenseQueryA: "草",
       defenseQueryB: "冰",
+      defenseQueryPet: "",
       wheelSelected: "",
       wheelSort: "score"
     };
@@ -939,6 +1115,9 @@
     const detail = document.getElementById("detail");
     const attackQuerySummary = document.getElementById("attackQuerySummary");
     const attackQueryResult = document.getElementById("attackQueryResult");
+    const petPicker = document.getElementById("petPicker");
+    const petSearchInput = document.getElementById("petSearchInput");
+    const petSearchMenu = document.getElementById("petSearchMenu");
     const defenseQuerySummary = document.getElementById("defenseQuerySummary");
     const defenseQueryResult = document.getElementById("defenseQueryResult");
     const wheelSummary = document.getElementById("wheelSummary");
@@ -953,6 +1132,15 @@
     const wheelDefenseSummary = document.getElementById("wheelDefenseSummary");
     const wheelDefenseList = document.getElementById("wheelDefenseList");
     const wheelSortButtons = document.querySelectorAll(".wheel-sort-button");
+    const petTypeAliases = { "恶": "恶魔", "幽": "幽灵", "地": "地面" };
+    const petIndex = (window.ROCO_PET_INDEX || [])
+      .map(pet => ({
+        ...pet,
+        types: [...new Set((pet.types || []).map(type => petTypeAliases[type] || type))]
+          .filter(type => types.includes(type))
+          .slice(0, 2)
+      }))
+      .filter(pet => pet.displayName && pet.types.length > 0);
 
     function iconSrc(type) {
       return `assets/type-icons/${typeIcons[type]}`;
@@ -1074,9 +1262,14 @@
         optionButton.addEventListener("click", () => {
           if (isOptionDisabled(key, option.value)) return;
           state[key] = option.value;
+          if (key === "defenseQueryA" || key === "defenseQueryB") {
+            state.defenseQueryPet = "";
+            petSearchInput.value = "";
+          }
           normalizePairedTypes();
           renderAllPickers();
           closePickers();
+          closePetPicker();
           renderAllViews();
         });
         menu.append(optionButton);
@@ -1248,13 +1441,64 @@
     function createQueryGroup(title, items, variant = "") {
       const group = document.createElement("section");
       group.className = "query-group";
+      const header = document.createElement("div");
+      header.className = "query-group-header";
       const heading = document.createElement("h2");
       heading.textContent = `${title}（${items.length}）`;
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "query-toggle";
+      toggle.textContent = "展开";
+      toggle.setAttribute("aria-expanded", "false");
       const list = document.createElement("div");
       list.className = "match-list";
       items.forEach(item => list.append(createQueryItem(item, variant)));
-      group.append(heading, list);
+      toggle.addEventListener("click", () => {
+        const isCollapsed = list.classList.toggle("is-collapsed");
+        toggle.textContent = isCollapsed ? "展开" : "收起";
+        toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+      });
+      header.append(heading, toggle);
+      group.append(header, list);
+      requestAnimationFrame(() => updateQueryGroupCollapse(group));
       return group;
+    }
+
+    function updateQueryGroupCollapse(group) {
+      const list = group.querySelector(".match-list");
+      const toggle = group.querySelector(".query-toggle");
+      const entries = [...list.children];
+      if (!entries.length || group.getClientRects().length === 0) return;
+
+      const listTop = list.getBoundingClientRect().top;
+      const rowTops = [...new Set(entries.map(entry =>
+        Math.round(entry.getBoundingClientRect().top - listTop)
+      ))].sort((a, b) => a - b);
+      const isCollapsible = rowTops.length > 2;
+      group.classList.toggle("is-collapsible", isCollapsible);
+      if (!isCollapsible) {
+        list.classList.remove("is-collapsed");
+        list.style.removeProperty("--collapsed-height");
+        toggle.textContent = "展开";
+        toggle.setAttribute("aria-expanded", "false");
+        return;
+      }
+
+      const secondRowTop = rowTops[1];
+      const collapsedBottom = Math.max(...entries
+        .filter(entry => Math.round(entry.getBoundingClientRect().top - listTop) <= secondRowTop)
+        .map(entry => entry.getBoundingClientRect().bottom - listTop));
+      list.style.setProperty("--collapsed-height", `${Math.ceil(collapsedBottom)}px`);
+      if (!list.classList.contains("is-collapsed") && toggle.getAttribute("aria-expanded") !== "true") {
+        list.classList.add("is-collapsed");
+      }
+      const isCollapsed = list.classList.contains("is-collapsed");
+      toggle.textContent = isCollapsed ? "展开" : "收起";
+      toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+    }
+
+    function updateQueryGroupCollapses(root = document) {
+      root.querySelectorAll(".query-group").forEach(updateQueryGroupCollapse);
     }
 
     function createComboBadges(combo) {
@@ -1262,6 +1506,87 @@
       wrap.className = "combo-badges";
       combo.types.forEach(type => wrap.append(createTypeBadge(type)));
       return wrap;
+    }
+
+    function getSelectedDefensePet() {
+      return petIndex.find(pet => pet.key === state.defenseQueryPet) || null;
+    }
+
+    function petLabel(pet) {
+      return [pet.no, pet.displayName].filter(Boolean).join(" ");
+    }
+
+    function petSearchText(pet) {
+      return [pet.no, pet.name, pet.displayName, pet.stage, pet.types.join("")]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+    }
+
+    function getPetMatches(query) {
+      const keyword = query.trim().toLowerCase();
+      const source = keyword
+        ? petIndex.filter(pet => petSearchText(pet).includes(keyword))
+        : petIndex;
+      return source.slice(0, 16);
+    }
+
+    function closePetPicker() {
+      petPicker.classList.remove("is-open");
+    }
+
+    function openPetPicker() {
+      if (petSearchInput.disabled) return;
+      petPicker.classList.add("is-open");
+      renderPetPicker();
+    }
+
+    function selectDefensePet(pet) {
+      state.defenseQueryPet = pet.key;
+      state.defenseQueryA = pet.types[0] || "";
+      state.defenseQueryB = pet.types[1] || "";
+      petSearchInput.value = pet.displayName;
+      normalizePairedTypes();
+      renderAllPickers();
+      closePetPicker();
+      renderAllViews();
+    }
+
+    function renderPetPicker() {
+      if (!petIndex.length) {
+        petSearchInput.disabled = true;
+        petSearchInput.placeholder = "未载入精灵数据";
+        petSearchMenu.replaceChildren();
+        return;
+      }
+      const matches = getPetMatches(petSearchInput.value);
+      petSearchMenu.replaceChildren();
+      if (!matches.length) {
+        const empty = document.createElement("div");
+        empty.className = "pet-empty";
+        empty.textContent = "没有匹配精灵";
+        petSearchMenu.append(empty);
+        return;
+      }
+      matches.forEach(pet => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "pet-option";
+        option.setAttribute("role", "option");
+
+        const text = document.createElement("span");
+        const title = document.createElement("span");
+        title.className = "pet-option-title";
+        title.textContent = pet.displayName;
+        const meta = document.createElement("span");
+        meta.className = "pet-option-meta";
+        meta.textContent = [pet.no, pet.stage].filter(Boolean).join(" · ");
+        text.append(title, meta);
+
+        option.append(text, createComboBadges(pet));
+        option.addEventListener("click", () => selectDefensePet(pet));
+        petSearchMenu.append(option);
+      });
     }
 
     function groupByValue(items, definitions) {
@@ -1312,6 +1637,7 @@
 
     function renderDefenseQuery() {
       const defenses = [state.defenseQueryA, state.defenseQueryB].filter(Boolean);
+      const selectedPet = getSelectedDefensePet();
       const items = types
         .map(type => ({ type, value: calcDefenseTotal(type, defenses) }))
         .sort((a, b) => a.value - b.value || sortByTypeOrder(a, b));
@@ -1319,6 +1645,7 @@
       const neutral = items.filter(item => item.value === 1).length;
       const weak = items.filter(item => item.value > 1).length;
       defenseQuerySummary.replaceChildren(
+        ...(selectedPet ? [createResultChip("", petLabel(selectedPet), "is-pet")] : []),
         ...defenses.map(type => createResultChip(type, type)),
         createResultChip("", `抵抗 ${resistant}`),
         createResultChip("", `正常 ${neutral}`),
@@ -1508,6 +1835,26 @@
     createPicker("attackQueryPicker", "attackQuery");
     createPicker("defenseQueryAPicker", "defenseQueryA");
     createPicker("defenseQueryBPicker", "defenseQueryB", true);
+    petPicker.addEventListener("click", event => event.stopPropagation());
+    petSearchInput.addEventListener("focus", openPetPicker);
+    petSearchInput.addEventListener("input", () => {
+      state.defenseQueryPet = "";
+      renderPetPicker();
+      openPetPicker();
+      renderDefenseQuery();
+    });
+    petSearchInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        const [firstMatch] = getPetMatches(petSearchInput.value);
+        if (firstMatch) {
+          event.preventDefault();
+          selectDefensePet(firstMatch);
+        }
+      }
+      if (event.key === "Escape") {
+        closePetPicker();
+      }
+    });
     sameTypeToggle.addEventListener("change", () => {
       updateSameTypeControls();
       renderAllViews();
@@ -1527,15 +1874,29 @@
         modePanels.forEach(panel => panel.classList.toggle("is-active", panel.dataset.panel === mode));
         chartSection.hidden = mode === "wheel";
         closePickers();
+        closePetPicker();
+        requestAnimationFrame(() => updateQueryGroupCollapses(document.querySelector(`[data-panel="${mode}"]`)));
       });
     });
-    document.addEventListener("click", () => closePickers());
+    let collapseResizeTimer = 0;
+    window.addEventListener("resize", () => {
+      window.clearTimeout(collapseResizeTimer);
+      collapseResizeTimer = window.setTimeout(() => updateQueryGroupCollapses(), 120);
+    });
+    document.addEventListener("click", () => {
+      closePickers();
+      closePetPicker();
+    });
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape") closePickers();
+      if (event.key === "Escape") {
+        closePickers();
+        closePetPicker();
+      }
     });
 
     renderTable();
     renderWheelTable();
+    renderPetPicker();
     updateSameTypeControls();
     renderAllViews();
   </script>
