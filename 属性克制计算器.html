@@ -81,6 +81,9 @@
     .mode-panel.is-active {
       display: block;
     }
+    [hidden] {
+      display: none !important;
+    }
     .calculator {
       position: relative;
       z-index: 10;
@@ -804,16 +807,18 @@
       </div>
     </section>
 
-    <div class="table-wrap">
-      <table id="chart" aria-label="属性克制表"></table>
-    </div>
-    <div class="legend">
-      <span class="pill"><span class="super">2</span>造成 2 倍伤害</span>
-      <span class="pill"><span class="resist">0.5</span>造成 0.5 倍伤害</span>
-      <span class="pill"><span class="normal">1</span>正常伤害</span>
-      <span>双系受击：双克制 3 倍，双抵抗 0.25 倍，一克一抵 1 倍。</span>
-      <span>本系加成：开启后，技能系别与攻击方自身任一系别相同则再乘 1.25 倍。</span>
-    </div>
+    <section id="chartSection" aria-label="属性克制表区域">
+      <div class="table-wrap">
+        <table id="chart" aria-label="属性克制表"></table>
+      </div>
+      <div class="legend">
+        <span class="pill"><span class="super">2</span>造成 2 倍伤害</span>
+        <span class="pill"><span class="resist">0.5</span>造成 0.5 倍伤害</span>
+        <span class="pill"><span class="normal">1</span>正常伤害</span>
+        <span>双系受击：双克制 3 倍，双抵抗 0.25 倍，一克一抵 1 倍。</span>
+        <span>本系加成：开启后，技能系别与攻击方自身任一系别相同则再乘 1.25 倍。</span>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -880,6 +885,7 @@
     const pickers = {};
     const modeTabs = document.querySelectorAll(".mode-tab");
     const modePanels = document.querySelectorAll(".mode-panel");
+    const chartSection = document.getElementById("chartSection");
     const sameTypePanel = document.getElementById("sameTypePanel");
     const sameTypeToggle = document.getElementById("sameTypeToggle");
     const sameTypeStatus = document.getElementById("sameTypeStatus");
@@ -1424,6 +1430,7 @@
         const mode = tab.dataset.mode;
         modeTabs.forEach(item => item.classList.toggle("is-active", item === tab));
         modePanels.forEach(panel => panel.classList.toggle("is-active", panel.dataset.panel === mode));
+        chartSection.hidden = mode === "wheel";
         closePickers();
       });
     });
