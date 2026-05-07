@@ -351,6 +351,143 @@
       border-color: rgba(37, 99, 235, 0.22);
       background: #dbeafe;
     }
+    .wheel-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 32%);
+      gap: 12px;
+      align-items: start;
+    }
+    .wheel-board {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+    .wheel-table {
+      table-layout: fixed;
+      min-width: 720px;
+      font-size: 13px;
+    }
+    .wheel-table th,
+    .wheel-table td {
+      width: auto;
+      height: 42px;
+      padding: 6px 7px;
+      text-align: left;
+    }
+    .wheel-table th:nth-child(1),
+    .wheel-table td:nth-child(1) { width: 58px; }
+    .wheel-table th:nth-child(2),
+    .wheel-table td:nth-child(2) { width: 150px; }
+    .wheel-table th:nth-child(3),
+    .wheel-table td:nth-child(3) { width: 82px; }
+    .wheel-table th:nth-child(4),
+    .wheel-table td:nth-child(4),
+    .wheel-table th:nth-child(5),
+    .wheel-table td:nth-child(5) { width: 74px; }
+    .wheel-table th:nth-child(n+6),
+    .wheel-table td:nth-child(n+6) { width: 56px; }
+    .wheel-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .wheel-table th:first-child,
+    .wheel-table td:first-child {
+      position: static;
+      padding-left: 9px;
+    }
+    .wheel-table tbody tr {
+      cursor: pointer;
+    }
+    .wheel-table tbody tr:hover td {
+      background: #f1f7ff;
+    }
+    .wheel-table tbody tr.is-selected td {
+      background: var(--teal-soft);
+    }
+    .rank-cell {
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .score-cell {
+      color: #0f766e;
+      font-weight: 900;
+    }
+    .combo-badges {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+    .combo-badges .type-badge {
+      gap: 5px;
+      font-weight: 900;
+    }
+    .combo-badges .type-badge img {
+      width: 20px;
+      height: 20px;
+    }
+    .wheel-detail {
+      display: grid;
+      gap: 10px;
+      position: sticky;
+      top: 12px;
+    }
+    .wheel-card {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+    .wheel-card h2 {
+      margin: 0;
+      color: #334155;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .wheel-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .wheel-stat {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+    .wheel-stat strong {
+      overflow: hidden;
+      font-size: 18px;
+      line-height: 1;
+      text-overflow: ellipsis;
+    }
+    .wheel-stat span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .wheel-mini-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 170px;
+      overflow: auto;
+    }
+    .wheel-mini-list .result-chip {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .wheel-mini-list .result-chip.is-good { background: var(--teal-soft); }
+    .wheel-mini-list .result-chip.is-bad { background: var(--accent-soft); }
     .toggle-label {
       gap: 9px;
     }
@@ -532,6 +669,8 @@
     }
     @media (max-width: 1020px) {
       .calculator { grid-template-columns: 1fr; }
+      .wheel-layout { grid-template-columns: 1fr; }
+      .wheel-detail { position: static; }
       .result { min-height: 132px; }
     }
     @media (max-width: 760px) {
@@ -556,6 +695,7 @@
       <button class="mode-tab is-active" type="button" data-mode="battle">一回合对战</button>
       <button class="mode-tab" type="button" data-mode="attack">攻击面查询</button>
       <button class="mode-tab" type="button" data-mode="defense">抵抗面查询</button>
+      <button class="mode-tab" type="button" data-mode="wheel">车轮榜单</button>
     </div>
 
     <section id="battlePanel" class="mode-panel is-active" data-panel="battle">
@@ -632,6 +772,38 @@
       </div>
     </section>
 
+    <section id="wheelPanel" class="mode-panel" data-panel="wheel">
+      <div class="query-panel" aria-label="单系与双系车轮战榜单">
+        <div class="query-summary" id="wheelSummary"></div>
+        <div class="wheel-layout">
+          <div class="wheel-board">
+            <table id="wheelTable" class="wheel-table" aria-label="车轮战属性组合榜单"></table>
+          </div>
+          <aside class="wheel-detail" aria-live="polite">
+            <section class="wheel-card">
+              <h2 id="wheelDetailTitle">属性组合</h2>
+              <div id="wheelDetailTypes" class="query-summary"></div>
+              <div class="wheel-stat-grid">
+                <div class="wheel-stat"><strong id="wheelDetailScore">0</strong><span>综合分</span></div>
+                <div class="wheel-stat"><strong id="wheelDetailAttackAvg">0</strong><span>平均输出</span></div>
+                <div class="wheel-stat"><strong id="wheelDetailTakenAvg">0</strong><span>平均承伤</span></div>
+              </div>
+            </section>
+            <section class="wheel-card">
+              <h2>攻击面</h2>
+              <div id="wheelAttackSummary" class="query-summary"></div>
+              <div id="wheelAttackList" class="wheel-mini-list"></div>
+            </section>
+            <section class="wheel-card">
+              <h2>抵抗面</h2>
+              <div id="wheelDefenseSummary" class="query-summary"></div>
+              <div id="wheelDefenseList" class="wheel-mini-list"></div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+
     <div class="table-wrap">
       <table id="chart" aria-label="属性克制表"></table>
     </div>
@@ -702,7 +874,8 @@
       attackerB: "",
       attackQuery: "火",
       defenseQueryA: "草",
-      defenseQueryB: "冰"
+      defenseQueryB: "冰",
+      wheelSelected: ""
     };
     const pickers = {};
     const modeTabs = document.querySelectorAll(".mode-tab");
@@ -716,6 +889,17 @@
     const attackQueryResult = document.getElementById("attackQueryResult");
     const defenseQuerySummary = document.getElementById("defenseQuerySummary");
     const defenseQueryResult = document.getElementById("defenseQueryResult");
+    const wheelSummary = document.getElementById("wheelSummary");
+    const wheelTable = document.getElementById("wheelTable");
+    const wheelDetailTitle = document.getElementById("wheelDetailTitle");
+    const wheelDetailTypes = document.getElementById("wheelDetailTypes");
+    const wheelDetailScore = document.getElementById("wheelDetailScore");
+    const wheelDetailAttackAvg = document.getElementById("wheelDetailAttackAvg");
+    const wheelDetailTakenAvg = document.getElementById("wheelDetailTakenAvg");
+    const wheelAttackSummary = document.getElementById("wheelAttackSummary");
+    const wheelAttackList = document.getElementById("wheelAttackList");
+    const wheelDefenseSummary = document.getElementById("wheelDefenseSummary");
+    const wheelDefenseList = document.getElementById("wheelDefenseList");
 
     function iconSrc(type) {
       return `assets/type-icons/${typeIcons[type]}`;
@@ -872,8 +1056,79 @@
       return 1;
     }
 
+    function makeTypeCombos() {
+      const combos = types.map(type => ({ id: type, name: type, types: [type] }));
+      types.forEach((typeA, index) => {
+        types.slice(index + 1).forEach(typeB => {
+          combos.push({ id: `${typeA}+${typeB}`, name: `${typeA}/${typeB}`, types: [typeA, typeB] });
+        });
+      });
+      return combos;
+    }
+
+    const typeCombos = makeTypeCombos();
+
+    function comboTypeOrder(combo) {
+      return combo.types.reduce((sum, type, index) => sum + types.indexOf(type) * (index + 1), 0);
+    }
+
+    function calcBestAttack(attackTypes, defenderTypes) {
+      return Math.max(...attackTypes.map(attack => calcDefenseTotal(attack, defenderTypes)));
+    }
+
+    function getComboMatchups(combo) {
+      const opponents = typeCombos.filter(opponent => opponent.id !== combo.id);
+      const attack = opponents.map(opponent => ({
+        combo: opponent,
+        value: calcBestAttack(combo.types, opponent.types)
+      }));
+      const defense = opponents.map(opponent => ({
+        combo: opponent,
+        value: calcBestAttack(opponent.types, combo.types)
+      }));
+      return { attack, defense };
+    }
+
+    function summarizeValues(items) {
+      const total = items.reduce((sum, item) => sum + item.value, 0);
+      return {
+        avg: total / items.length,
+        strong: items.filter(item => item.value > 1).length,
+        neutral: items.filter(item => item.value === 1).length,
+        resisted: items.filter(item => item.value < 1).length,
+        severe: items.filter(item => item.value >= 3).length
+      };
+    }
+
+    function scoreCombo(combo) {
+      const matchups = getComboMatchups(combo);
+      const attack = summarizeValues(matchups.attack);
+      const defense = summarizeValues(matchups.defense);
+      const score = attack.avg / defense.avg * 100;
+      return { ...combo, matchups, attack, defense, score };
+    }
+
+    const wheelRanks = typeCombos
+      .map(scoreCombo)
+      .sort((a, b) =>
+        b.score - a.score ||
+        b.attack.strong - a.attack.strong ||
+        a.defense.strong - b.defense.strong ||
+        comboTypeOrder(a) - comboTypeOrder(b)
+      );
+    wheelRanks.forEach((combo, index) => {
+      combo.rank = index + 1;
+    });
+    if (!state.wheelSelected) {
+      state.wheelSelected = wheelRanks[0].id;
+    }
+
     function formatMultiplier(value) {
       return Number.parseFloat(value.toFixed(4)).toString();
+    }
+
+    function formatCompact(value, digits = 2) {
+      return Number.parseFloat(value.toFixed(digits)).toString();
     }
 
     function createResultChip(type, text, className = "") {
@@ -906,6 +1161,7 @@
       renderResult();
       renderAttackQuery();
       renderDefenseQuery();
+      renderWheelDetail();
     }
 
     function renderResult() {
@@ -954,6 +1210,13 @@
       items.forEach(item => list.append(createQueryItem(item.type, variant)));
       group.append(heading, list);
       return group;
+    }
+
+    function createComboBadges(combo) {
+      const wrap = document.createElement("span");
+      wrap.className = "combo-badges";
+      combo.types.forEach(type => wrap.append(createTypeBadge(type)));
+      return wrap;
     }
 
     function groupByValue(items, definitions) {
@@ -1011,6 +1274,103 @@
         { title: "被克制，受到 x2", value: 2, variant: "is-bad" },
         { title: "严重被克制，受到 x3", value: 3, variant: "is-bad" }
       ]).forEach(group => defenseQueryResult.append(createQueryGroup(group.title, group.items, group.variant)));
+    }
+
+    function createCell(text, className = "") {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (className) td.className = className;
+      return td;
+    }
+
+    function createComboCell(combo) {
+      const td = document.createElement("td");
+      td.append(createComboBadges(combo));
+      return td;
+    }
+
+    function renderWheelTable() {
+      const header = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      ["排名", "系别", "综合", "输出", "承伤", "克制", "被抗", "抵抗", "弱点"].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.append(th);
+      });
+      header.append(headerRow);
+
+      const body = document.createElement("tbody");
+      wheelRanks.forEach(combo => {
+        const row = document.createElement("tr");
+        row.dataset.comboId = combo.id;
+        row.classList.toggle("is-selected", combo.id === state.wheelSelected);
+        row.append(
+          createCell(`#${combo.rank}`, "rank-cell"),
+          createComboCell(combo),
+          createCell(formatCompact(combo.score, 1), "score-cell"),
+          createCell(`x${formatCompact(combo.attack.avg)}`),
+          createCell(`x${formatCompact(combo.defense.avg)}`),
+          createCell(String(combo.attack.strong)),
+          createCell(String(combo.attack.resisted)),
+          createCell(String(combo.defense.resisted)),
+          createCell(String(combo.defense.strong))
+        );
+        row.addEventListener("click", () => {
+          state.wheelSelected = combo.id;
+          renderWheelTable();
+          renderWheelDetail();
+        });
+        body.append(row);
+      });
+      wheelTable.replaceChildren(header, body);
+    }
+
+    function matchupVariant(value, isDefense = false) {
+      if (value > 1) return isDefense ? "is-bad" : "is-good";
+      if (value < 1) return isDefense ? "is-good" : "is-bad";
+      return "";
+    }
+
+    function createComboChip(matchup, isDefense = false) {
+      const chip = document.createElement("span");
+      chip.className = `result-chip ${matchupVariant(matchup.value, isDefense)}`.trim();
+      chip.append(createComboBadges(matchup.combo), document.createTextNode(` x${formatMultiplier(matchup.value)}`));
+      return chip;
+    }
+
+    function renderMatchupList(root, items, isDefense = false) {
+      const sorted = [...items].sort((a, b) =>
+        (isDefense ? a.value - b.value : b.value - a.value) ||
+        comboTypeOrder(a.combo) - comboTypeOrder(b.combo)
+      );
+      root.replaceChildren();
+      sorted.forEach(item => root.append(createComboChip(item, isDefense)));
+    }
+
+    function renderWheelDetail() {
+      const selected = wheelRanks.find(combo => combo.id === state.wheelSelected) || wheelRanks[0];
+      wheelSummary.replaceChildren(
+        createResultChip("", `共 ${typeCombos.length} 种单系/双系组合`),
+        createResultChip("", "进攻取自身系别中的最高伤害"),
+        createResultChip("", "防守按对手自身系别中的最高伤害承伤")
+      );
+      wheelDetailTitle.textContent = `#${selected.rank} ${selected.name}`;
+      wheelDetailTypes.replaceChildren(...selected.types.map(type => createResultChip(type, type)));
+      wheelDetailScore.textContent = formatCompact(selected.score, 1);
+      wheelDetailAttackAvg.textContent = `x${formatCompact(selected.attack.avg)}`;
+      wheelDetailTakenAvg.textContent = `x${formatCompact(selected.defense.avg)}`;
+      wheelAttackSummary.replaceChildren(
+        createResultChip("", `克制 ${selected.attack.strong}`),
+        createResultChip("", `正常 ${selected.attack.neutral}`),
+        createResultChip("", `被抵抗 ${selected.attack.resisted}`)
+      );
+      wheelDefenseSummary.replaceChildren(
+        createResultChip("", `抵抗 ${selected.defense.resisted}`),
+        createResultChip("", `正常 ${selected.defense.neutral}`),
+        createResultChip("", `弱点 ${selected.defense.strong}`)
+      );
+      renderMatchupList(wheelAttackList, selected.matchups.attack, false);
+      renderMatchupList(wheelDefenseList, selected.matchups.defense, true);
     }
 
     function renderTable() {
@@ -1073,6 +1433,7 @@
     });
 
     renderTable();
+    renderWheelTable();
     updateSameTypeControls();
     renderAllViews();
   </script>
